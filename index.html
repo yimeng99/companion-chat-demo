@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solace — conversation interface concept</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #10121b; color: #f5f1ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 72% 18%, #47344f 0, transparent 34%), radial-gradient(circle at 12% 90%, #233f45 0, transparent 29%), #10121b; }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { display: grid; grid-template-columns: 270px minmax(0, 1fr); max-width: 1440px; min-height: 100vh; margin: auto; border-inline: 1px solid #ffffff13; backdrop-filter: blur(24px); }
+    aside { border-right: 1px solid #ffffff16; background: #10141ac9; padding: 30px 18px; display: flex; flex-direction: column; gap: 34px; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 14px; font-size: 20px; font-weight: 700; letter-spacing: -.03em; }
+    .mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: linear-gradient(135deg, #ffc6a8, #bb8fdb); color: #311e35; font-size: 22px; }
+    .label { color: #908e9d; font-size: 11px; text-transform: uppercase; letter-spacing: .17em; padding: 0 14px 10px; }
+    .nav { width: 100%; border: 0; border-radius: 14px; background: none; color: #ada9b9; padding: 13px 15px; display: flex; align-items: center; gap: 13px; text-align: left; }
+    .nav.active { background: #ffffff17; color: #fff6f0; }
+    .nav:hover { background: #ffffff10; color: #fff; }
+    .nav .icon { font-size: 19px; width: 24px; text-align: center; }
+    .spacer { flex: 1; }
+    .aside-note { margin: 0 9px; border: 1px solid #ffffff1e; border-radius: 17px; padding: 16px; background: #ffffff08; color: #ada9b9; font-size: 12px; line-height: 1.55; }
+    main { min-width: 0; display: flex; flex-direction: column; }
+    header { height: 90px; border-bottom: 1px solid #ffffff15; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(22px, 5vw, 70px); }
+    .person { display: flex; align-items: center; gap: 13px; }
+    .avatar { width: 43px; height: 43px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(150deg,#efbba7,#a785bd 70%,#6979ad); color: #2c2532; font-size: 24px; }
+    .person strong { display: block; font-size: 14px; }
+    .person small { display: block; margin-top: 4px; color: #a5a0aa; font-size: 12px; }
+    .status { color: #b7d2bc; background: #75ae811c; padding: 8px 12px; border-radius: 999px; font-size: 12px; }
+    .conversation { width: min(100%, 740px); margin: auto; padding: 42px 24px 26px; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 25px; }
+    .day { align-self: center; color: #9994a5; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 8px; }
+    .message { max-width: 76%; line-height: 1.55; font-size: 15px; }
+    .message.assistant { align-self: flex-start; }
+    .message.user { align-self: flex-end; }
+    .bubble { padding: 15px 19px; border-radius: 19px; }
+    .assistant .bubble { background: #ffffff12; border: 1px solid #ffffff0d; border-bottom-left-radius: 6px; }
+    .user .bubble { background: linear-gradient(130deg, #e8bba6, #d6afce); color: #2d2633; border-bottom-right-radius: 6px; }
+    .message small { display: block; color: #8b8797; font-size: 11px; margin-top: 8px; }
+    .user small { text-align: right; }
+    .suggestions { display: flex; gap: 9px; flex-wrap: wrap; padding-top: 12px; }
+    .suggestions button { border: 1px solid #ffffff25; background: #ffffff0c; color: #d3ced7; border-radius: 99px; padding: 9px 13px; font-size: 12px; }
+    .suggestions button:hover { background: #ffffff1b; }
+    .composer-wrap { padding: 10px 24px 28px; }
+    form { max-width: 740px; margin: 0 auto; display: flex; align-items: flex-end; gap: 12px; border: 1px solid #ffffff28; background: #262531dc; border-radius: 22px; padding: 11px 12px 11px 19px; box-shadow: 0 12px 40px #0003; }
+    textarea { resize: none; min-height: 32px; max-height: 130px; width: 100%; border: 0; outline: 0; background: transparent; color: white; padding: 7px 0; line-height: 1.4; }
+    textarea::placeholder { color: #96909d; }
+    .send { border: 0; width: 38px; height: 38px; flex: none; border-radius: 13px; background: #e5b9ae; color: #28202d; font-size: 18px; }
+    .footnote { text-align: center; color: #777382; margin-top: 12px; font-size: 10px; }
+    @media (max-width: 760px) { .shell { grid-template-columns: 1fr; } aside { display: none; } header { height: 74px; } .conversation { padding-top: 26px; gap: 19px; } .message { max-width: 88%; } .status { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand"><span class="mark">✦</span> Solace</div>
+      <nav aria-label="Demo navigation">
+        <div class="label">Your space</div>
+        <button class="nav active" type="button"><span class="icon">◌</span> Conversation</button>
+        <button class="nav" type="button"><span class="icon">♡</span> Moments</button>
+        <button class="nav" type="button"><span class="icon">✧</span> Discover</button>
+      </nav>
+      <div class="spacer"></div>
+      <div class="aside-note">A visual interaction demo. Messages stay in this browser session; no account or AI service is connected.</div>
+    </aside>
+    <main>
+      <header>
+        <div class="person"><span class="avatar" aria-hidden="true">✦</span><span><strong>Nova</strong><small>Here to listen</small></span></div>
+        <span class="status">● &nbsp; Available</span>
+      </header>
+      <div class="conversation" id="conversation" aria-live="polite">
+        <div class="day">Today</div>
+        <div class="message assistant"><div class="bubble">Hey, I’m glad you’re here. What’s on your mind tonight?</div><small>Nova · 8:42 PM</small></div>
+        <div class="message user"><div class="bubble">It’s been a long day. I could use a moment to slow down.</div><small>You · 8:42 PM</small></div>
+        <div class="message assistant"><div class="bubble">Then let’s take that moment together. We can talk through the day, or simply start with one good thing that happened.</div><small>Nova · 8:43 PM</small></div>
+        <div class="suggestions"><button type="button" data-prompt="Help me unwind">Help me unwind</button><button type="button" data-prompt="Let’s talk about my day">Let’s talk about my day</button><button type="button" data-prompt="Ask me something gentle">Ask me something gentle</button></div>
+      </div>
+      <div class="composer-wrap">
+        <form id="chat-form"><textarea id="input" rows="1" placeholder="Share what’s on your mind…" aria-label="Your message"></textarea><button class="send" type="submit" aria-label="Send message">➤</button></form>
+        <div class="footnote">Interface concept · scripted demo responses</div>
+      </div>
+    </main>
+  </div>
+  <script>
+    const form = document.querySelector('#chat-form');
+    const input = document.querySelector('#input');
+    const conversation = document.querySelector('#conversation');
+    const replies = [
+      'That sounds like a lot to carry. What part of it is still on your mind?',
+      'We can take it one thought at a time. I’m here with you.',
+      'Let’s pause for a breath. What would feel helpful right now?'
+    ];
+    let replyIndex = 0;
+    function addMessage(text, who) {
+      const message = document.createElement('div');
+      message.className = `message ${who}`;
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      const time = document.createElement('small');
+      time.textContent = `${who === 'user' ? 'You' : 'Nova'} · ${new Intl.DateTimeFormat('en', { hour: 'numeric', minute: '2-digit' }).format(new Date())}`;
+      message.append(bubble, time);
+      conversation.append(message);
+      message.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const value = input.value.trim();
+      if (!value) return;
+      addMessage(value, 'user');
+      input.value = '';
+      window.setTimeout(() => addMessage(replies[replyIndex++ % replies.length], 'assistant'), 500);
+    });
+    input.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); form.requestSubmit(); } });
+    document.querySelectorAll('[data-prompt]').forEach(button => button.addEventListener('click', () => { input.value = button.dataset.prompt; form.requestSubmit(); }));
+  </script>
+</body>
+</html>
